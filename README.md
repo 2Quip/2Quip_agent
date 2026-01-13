@@ -1,12 +1,12 @@
 # Agno AI Agent API
 
-An intelligent AI agent powered by [Agno](https://github.com/agno-agi/agno) with web search and database interaction capabilities. The agent uses **GPT OSS 120B** model and provides conversational access to web information and MySQL database queries.
+An intelligent AI agent powered by [Agno](https://github.com/agno-agi/agno) with web search and database capabilities. The agent uses **GPT OSS 120B** model via Groq and provides conversational access to web information with read-only access to Turso (SQLite) database.
 
 ## 🚀 Core Features
 
 -   **🔍 Web Search**: Real-time web search using DuckDuckGo for up-to-date information
--   **💾 Database Interaction**: Query and interact with MySQL database using natural language
--   **💬 Persistent Chat History**: Conversation history stored in MySQL for continuity
+-   **💾 Database Queries**: Read-only access to Turso (SQLite) database using natural language
+-   **💬 Persistent Chat History**: Conversation history stored locally in SQLite for continuity
 -   **⚡ Async FastAPI**: High-performance asynchronous API built with FastAPI
 -   **🔄 Session Management**: Multi-session support with automatic session tracking
 -   **📊 Structured Responses**: Clean JSON responses with markdown-formatted content
@@ -15,15 +15,15 @@ An intelligent AI agent powered by [Agno](https://github.com/agno-agi/agno) with
 
 -   **Framework**: FastAPI
 -   **AI Agent**: Agno 2.3+
--   **LLM**: Groq (Llama 3.3 70B Versatile)
--   **Database**: MySQL with mysqlclient
+-   **LLM**: Groq (GPT OSS 120B)
+-   **Database**: Turso (libSQL/SQLite)
 -   **Package Manager**: uv (fast Python package installer)
 -   **Search**: DuckDuckGo Search (ddgs)
 
 ## 📋 Prerequisites
 
 -   Python 3.12+
--   MySQL database
+-   Turso database (optional - for remote database access)
 -   Groq API key
 -   uv package manager (optional but recommended)
 
@@ -61,24 +61,19 @@ pip install -r requirements.txt
 Create a `.env` file in the root directory:
 
 ```env
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_NAME=your_db_name
-
-# Groq API Key
+# Groq API Key (Required)
 GROQ_API_KEY=your_groq_api_key_here
+
+# Turso Database Configuration (Optional - for remote database access)
+DATABASE_URL=libsql://your-database-name.turso.io
+DATABASE_AUTH_TOKEN=your-turso-auth-token-here
 
 # Server Configuration (optional)
 HOST=0.0.0.0
 PORT=8000
 ```
 
-### 5. Setup MySQL Database
-
-Ensure your MySQL database is running and accessible with the credentials in your `.env` file. The agent will automatically create the necessary tables for session storage.
+**Note**: By default, the agent uses a local SQLite database (`tmp/data.db`) for chat history. Turso configuration is only needed if you want to query a remote Turso database.
 
 ## 🚀 Running the Application
 
@@ -150,13 +145,13 @@ curl -X POST http://localhost:8000/chat \
   }'
 ```
 
-### Database Query Example
+### Database Query Example (Read-Only)
 
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
   -d '{
-    "message": "Show me all tables in the database",
+    "message": "What tables are in the database?",
     "session_id": "session123",
     "user_id": "user1"
   }'
@@ -199,6 +194,7 @@ curl -X POST http://localhost:8000/chat \
 
 -   Never commit your `.env` file to version control
 -   Keep your Groq API key secure
+-   Database access is **read-only** by design for safety
 -   Use environment variables for sensitive configuration
 -   Implement rate limiting in production
 -   Add authentication for production deployments
@@ -207,10 +203,7 @@ curl -X POST http://localhost:8000/chat \
 
 ### Database Connection Issues
 
-```bash
-# Test MySQL connection
-mysql -h localhost -u your_user -p your_database
-```
+If using Turso, verify your `DATABASE_URL` and `DATABASE_AUTH_TOKEN` are correct. The local SQLite database (`tmp/data.db`) is created automatically.
 
 ### Missing Dependencies
 
